@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQLite User Data API Dashboard & Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="logo-icon">
+          <i class="fa-solid fa-database"></i>
+        </div>
+        <div class="brand-text">
+          <h1>SQLite User API</h1>
+          <span class="badge badge-pulse">No Auth • JSON API</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="dashboard">
+            <i class="fa-solid fa-table-cells"></i> Database Dashboard
+          </button>
+          <button class="tab-btn" data-tab="api-explorer">
+            <i class="fa-solid fa-terminal"></i> Interactive API Explorer
+          </button>
+        </div>
+        <button id="reset-db-btn" class="btn btn-secondary" title="Reset SQLite database with sample seed data">
+          <i class="fa-solid fa-rotate-right"></i> Reset Seed Data
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- TAB 1: Database Dashboard -->
+      <section id="dashboard" class="tab-content active">
+        <!-- Stats Cards Row -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon icon-blue">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Users</span>
+              <h3 id="stat-total-users">-</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-green">
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Active Users</span>
+              <h3 id="stat-active-users">-</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-purple">
+              <i class="fa-solid fa-building"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Departments</span>
+              <h3 id="stat-depts">-</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon icon-orange">
+              <i class="fa-solid fa-server"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Database Status</span>
+              <h3 class="status-online"><i class="fa-solid fa-circle"></i> SQLite Connected</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-input" placeholder="Search by name, email, or role...">
+          </div>
+          <div class="filters">
+            <select id="role-filter">
+              <option value="">All Roles</option>
+            </select>
+            <select id="dept-filter">
+              <option value="">All Departments</option>
+            </select>
+            <select id="status-filter">
+              <option value="">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+            <button id="add-user-btn" class="btn btn-primary">
+              <i class="fa-solid fa-user-plus"></i> Add User
+            </button>
+          </div>
+        </div>
+
+        <!-- Users Table Card -->
+        <div class="card table-card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role & Dept</th>
+                  <th>Contact</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <!-- User rows rendered dynamically via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+          <div id="empty-state" class="empty-state hidden">
+            <i class="fa-solid fa-folder-open"></i>
+            <h3>No users found</h3>
+            <p>Try adjusting your search criteria or add a new user to the SQLite database.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: Interactive API Explorer -->
+      <section id="api-explorer" class="tab-content">
+        <div class="explorer-grid">
+          <!-- Left Endpoint Selector -->
+          <div class="card endpoints-card">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-list-check"></i> Available API Endpoints</h3>
+              <p>Click any endpoint to test live JSON HTTP responses directly</p>
+            </div>
+            <div class="endpoint-list">
+              <div class="endpoint-item active" data-endpoint="get-all">
+                <span class="method get">GET</span>
+                <span class="path">/api/users</span>
+                <span class="desc">Fetch all users (Supports query filters)</span>
+              </div>
+              <div class="endpoint-item" data-endpoint="get-single">
+                <span class="method get">GET</span>
+                <span class="path">/api/users/:id</span>
+                <span class="desc">Fetch single user details by ID</span>
+              </div>
+              <div class="endpoint-item" data-endpoint="post-create">
+                <span class="method post">POST</span>
+                <span class="path">/api/users</span>
+                <span class="desc">Create new user record</span>
+              </div>
+              <div class="endpoint-item" data-endpoint="put-update">
+                <span class="method put">PUT</span>
+                <span class="path">/api/users/:id</span>
+                <span class="desc">Update existing user record</span>
+              </div>
+              <div class="endpoint-item" data-endpoint="delete-user">
+                <span class="method delete">DELETE</span>
+                <span class="path">/api/users/:id</span>
+                <span class="desc">Delete user by ID</span>
+              </div>
+              <div class="endpoint-item" data-endpoint="get-stats">
+                <span class="method get">GET</span>
+                <span class="path">/api/stats</span>
+                <span class="desc">Get aggregate user statistics</span>
+              </div>
+              <div class="endpoint-item" data-endpoint="get-health">
+                <span class="method get">GET</span>
+                <span class="path">/api/health</span>
+                <span class="desc">API health status</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Request & Response Console -->
+          <div class="card console-card">
+            <div class="console-header">
+              <div class="request-bar">
+                <span id="console-method" class="method get">GET</span>
+                <input type="text" id="console-url" value="/api/users" readonly>
+                <button id="send-request-btn" class="btn btn-primary">
+                  <i class="fa-solid fa-paper-plane"></i> Send Request
+                </button>
+              </div>
+            </div>
+
+            <!-- Parameters / Body Input -->
+            <div id="request-body-container" class="request-body-section hidden">
+              <label for="request-json-body"><i class="fa-solid fa-code"></i> Request Body (JSON):</label>
+              <textarea id="request-json-body" rows="6"></textarea>
+            </div>
+
+            <!-- cURL Preview -->
+            <div class="curl-preview-box">
+              <div class="curl-header">
+                <span><i class="fa-solid fa-terminal"></i> cURL Command</span>
+                <button id="copy-curl-btn" class="btn btn-xs"><i class="fa-solid fa-copy"></i> Copy</button>
+              </div>
+              <code id="curl-text">curl -X GET http://localhost:3000/api/users</code>
+            </div>
+
+            <!-- Response Visualizer -->
+            <div class="response-section">
+              <div class="response-header">
+                <h4>Response Output</h4>
+                <div class="response-meta">
+                  <span id="response-status" class="status-badge badge-pending">Ready</span>
+                  <span id="response-time" class="time-text">0 ms</span>
+                </div>
+              </div>
+              <div class="code-container">
+                <pre><code id="json-response-display">// Output will be displayed here...</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal for Add/Edit User -->
+  <div id="user-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3 id="modal-title">Add New User</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="user-form">
+        <input type="hidden" id="user-id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="form-name">Full Name *</label>
+            <input type="text" id="form-name" required placeholder="e.g. John Doe">
+          </div>
+          <div class="form-group">
+            <label for="form-email">Email Address *</label>
+            <input type="email" id="form-email" required placeholder="john.doe@company.com">
+          </div>
+          <div class="form-group">
+            <label for="form-role">Role</label>
+            <input type="text" id="form-role" placeholder="e.g. Software Engineer">
+          </div>
+          <div class="form-group">
+            <label for="form-department">Department</label>
+            <input type="text" id="form-department" placeholder="e.g. Engineering">
+          </div>
+          <div class="form-group">
+            <label for="form-status">Status</label>
+            <select id="form-status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-phone">Phone Number</label>
+            <input type="text" id="form-phone" placeholder="+1 (555) 000-0000">
+          </div>
+          <div class="form-group full-width">
+            <label for="form-bio">Bio / Notes</label>
+            <textarea id="form-bio" rows="3" placeholder="Brief user description..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-user-btn">Save to SQLite</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
